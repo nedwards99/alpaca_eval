@@ -535,6 +535,9 @@ def get_all_clients(
     """Returns a list of different kwargs to pass to the client, each element corresponds to one possible client.
     For more information see `client_configs/README.md`.
     """
+    
+    if "api_key_env_var" in kwargs:
+        kwargs.pop("api_key_env_var", None)
 
     client_config_path = Path(client_config_path)
     if client_config_path.is_file():

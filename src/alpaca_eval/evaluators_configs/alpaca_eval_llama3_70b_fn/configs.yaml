@@ -9,5 +9,6 @@ alpaca_eval_llama3_70b_fn:
     price_per_token: 9e-7
     client_kwargs:
       base_url: 'https://api.together.xyz/v1'
+      api_key_env_var: 'TOGETHER_API_KEY'
   fn_completion_parser: "ranking_parser"
   batch_size: 1

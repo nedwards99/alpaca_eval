@@ -187,7 +187,7 @@ def _openai_completion_helper(
     client_config_path: utils.AnyPath = constants.OPENAI_CLIENT_CONFIG_PATH,  # see `client_configs/README.md`
     # following is only for backward compatibility and should be avoided
     openai_organization_ids: Optional[Sequence[str]] = constants.OPENAI_ORGANIZATION_IDS,
-    openai_api_keys: Optional[Sequence[str]] = constants.OPENAI_API_KEYS,
+    openai_api_keys: Optional[Sequence[str]] = None,
     openai_api_base: Optional[str] = os.getenv("OPENAI_API_BASE") if os.getenv("OPENAI_API_BASE") else openai.base_url,
     ############################
     client_kwargs: Optional[dict[str, Any]] = None,
@@ -195,6 +195,13 @@ def _openai_completion_helper(
     **kwargs,
 ):
     client_kwargs = client_kwargs or dict()
+    if openai_api_keys is None:
+        if "api_key_env_var" in client_kwargs:
+            openai_api_keys = os.getenv(client_kwargs["api_key_env_var"])
+            if isinstance(openai_api_keys, str):
+                openai_api_keys = openai_api_keys.split(",")
+        else:
+            openai_api_keys = constants.OPENAI_API_KEYS
     prompt_batch, max_tokens = args
     all_clients = utils.get_all_clients(
         client_config_path,
@@ -242,7 +249,7 @@ def _openai_completion_helper(
                         # currently we only use function calls to get a JSON object => return raw text of json
                         choices[i]["text"] = choice.message.function_call.arguments
 
-                    if choice.message.tool_calls is not None:
+                    if choice.message.tool_calls is not None and len(choice.message.tool_calls) > 0:
                         # currently we only use function calls to get a JSON object => return raw text of json
                         choices[i]["text"] = choice.message.tool_calls[0].function.arguments
 
